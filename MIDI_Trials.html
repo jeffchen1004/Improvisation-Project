@@ -96,7 +96,7 @@
             // Schedule a short beep on every beat
             var scheduleBeep = function(time) {
                 var osc = context.createOscillator();
-                osc.type = 'sine'; // Eperiment with different waveforms: sine, square, sawtooth, triangle
+                osc.type = 'sine'; // Experiment with different waveforms: sine, square, sawtooth, triangle
 
                 osc.connect(context.destination);
                 osc.start(time);

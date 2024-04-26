@@ -1,4 +1,5 @@
 # midi.py
+# Pyensemble integration
 import os
 from django.conf import settings
 from pyensemble.models import Stimulus, Session
@@ -14,6 +15,16 @@ def record_midi(request, *args, **kwargs):
     
     timeline = []
 
+    #var midiTrial = {
+    #type: 'record-midi',
+    #prompt: 'Get Ready! Press Y to start',
+    #trial_duration: 30000, // 30 seconds
+    #metronome_bpm: 85,
+    #metronome_beats: null, // Play indefinitely
+    #metronome_condition: 'beginning' // Play only at the beginning
+#};
+
+
     # Initialize condition if not set
     if 'current_trial' not in exp_session_info:
         exp_session_info['current_trial'] = 1
@@ -21,16 +32,26 @@ def record_midi(request, *args, **kwargs):
         # Move to the next trial
         exp_session_info['current_trial'] += 1
 
-    # Configure metronome settings based on the current trial
+
+    # Determine metronome settings based on the trial
+    metronome_beats = None
     if exp_session_info['current_trial'] == 1:
-        # First trial: 30 seconds of metronome
-        metronome_beats = 30 * kwargs.get('metronome_bpm', 85) // 60
+        metronome_condition = 'throughout'
     elif exp_session_info['current_trial'] == 2:
+        metronome_condition = 'beginning'
+    else:
+        metronome_condition = 'none'
+
+    # Configure metronome settings based on the current trial
+    #if exp_session_info['current_trial'] == 1:
+        # First trial: 30 seconds of metronome
+        #metronome_beats = 30 * kwargs.get('metronome_bpm', 85) // 60
+    #elif exp_session_info['current_trial'] == 2:
         # Second trial: 10 metronome beeps
-        metronome_beats = 10
-    elif exp_session_info['current_trial'] == 3:
+        #metronome_beats = 10
+    #elif exp_session_info['current_trial'] == 3:
         # Third trial: no metronome
-        metronome_beats = None
+        #metronome_beats = None
 
     # Calculates # of beat for continous
     #beats_per_minute = 85 # bpm
@@ -55,11 +76,14 @@ def record_midi(request, *args, **kwargs):
     
     trial = {
         'type': 'record-midi',
-        'click_to_start': False,
+        'prompt': 'Get Ready! Press Y to continue. Condition: {}'.format(exp_session_info['current_trial']), 
+        'click_to_start': True,
         'trial_duration': kwargs.get('trial_duration', 30000),  # in ms
         'metronome_bpm': kwargs.get('metronome_bpm', 85),      # beats per minute
         'metronome_delay': kwargs.get('metronome_delay', 3000),  # delay before metronome starts
-        'metronome_beats': metronome_beats
+        'metronome_beats': metronome_beats,
+        'metronome_condition': metronome_condition,
+        
     }
     timeline.append(trial)
 
