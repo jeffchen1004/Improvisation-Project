@@ -8,6 +8,9 @@ df = pd.read_csv('/Users/jeffchen/Desktop/Janata Lab/Improvisation Project/Extra
 left_hand_notes = df[df['MIDI Message'].str.contains("'1': [0-5][0-9]", regex=True)].copy()
 right_hand_notes = df[df['MIDI Message'].str.contains("'1': [6-9][0-9]", regex=True)].copy()
 
+# Add 'MIDI Events' column to right_hand_notes
+right_hand_notes['MIDI Events'] = right_hand_notes['MIDI Message'].apply(lambda x: [x])
+
 # Group Left Hand Notes into Chords
 def group_chords(df, time_window=100):
     df = df.sort_values(by='Timestamp')
