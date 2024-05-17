@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import pandas as pd
+import pdb
 
 # Ensure the 'pyensemble' directory is in the Python path
 sys.path.append('/Users/jeffchen/git/pyensemble')
@@ -26,21 +27,17 @@ all_midi_data = []
 # Extract MIDI data from each response
 for i, response in enumerate(responses):
     response_data = json.loads(response.jspsych_data)
-    print(f"Response {i + 1}:")
+    #print(f"Response {i + 1}:")
     print(response.jspsych_data)
     print("\n")
     
+    pdb.set_trace()
+
     # Assuming 'midi_data' is always present in each response's jspsych_data
     midi_data = response_data[0]['midi_data']
     
-    # Add a column indicating the condition based on the response index
-    condition = ''
-    if i == 0:
-        condition = 'Metronome Throughout'
-    elif i == 1:
-        condition = 'Metronome Beginning Only'
-    else:
-        condition = 'No Metronome'
+    # Extract the condition from the response data
+    condition = response_data[0]['metronome_condition']
     
     # Append the condition to each MIDI message
     for midi_message in midi_data:
