@@ -71,11 +71,12 @@ def create_trials(conditions, hand):
             'type': 'record-midi',
             'prompt': 'Get Ready! Press Y to continue. Hand: {}. Condition: {}'.format(hand, trial_num),
             'click_to_start': True,
-            'trial_duration': 30000,  # in ms
+            'trial_duration': 45000,  # in ms
             'metronome_bpm': 85,      # beats per minute
             'metronome_delay': 3000,  # delay before metronome starts
             'metronome_beats': metronome_beats,
-            'metronome_condition': condition['metronome_condition'] # store the condition here instead of the plugin
+            'metronome_condition': condition['metronome_condition'], # store the condition here instead of the plugin
+            'hand': hand,
         }
         trials.append(trial)
     return trials
@@ -84,7 +85,7 @@ def create_trials(conditions, hand):
 # fetches the next trial from the pre generated timeline and updates the current trial number
 # then trial data fetched is passed to the jsPsych plugin to be executed
 # Handle recording MIDI for the current trial
-def record_midi(request, hand, *args, **kwargs):
+def record_midi(request, *args, **kwargs):
     session_id = kwargs['session_id']
     session = Session.objects.get(id=session_id)
     cache_key = session.experiment.cache_key
