@@ -31,7 +31,7 @@ for i, response in enumerate(responses):
     print(response.jspsych_data)
     print("\n")
     
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Assuming 'midi_data' is always present in each response's jspsych_data
     midi_data = response_data[0]['midi_data']

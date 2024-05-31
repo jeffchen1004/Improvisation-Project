@@ -3,6 +3,7 @@
 import random # randomization
 from django.conf import settings
 from pyensemble.models import Session
+import pdb
 
 # creates a timeline with trials having different 'metronome_condition'
 def midi_timeline(request, *args, **kwargs):
@@ -12,8 +13,13 @@ def midi_timeline(request, *args, **kwargs):
     cache_key = session.experiment.cache_key
     exp_session_info = request.session.get(cache_key, {})
 
+    print("Generating warm-up phase")
     # Warm-up Phase
+    # add a value to the existing variable (timeline)
     timeline += warmup_phase()
+    print("Warm-up phase generated:", timeline)
+
+    print("Generating experimental phase")
 
     # Experimental Phase
     # Left -> Right -> Both, repeated three times / three loops
@@ -23,9 +29,14 @@ def midi_timeline(request, *args, **kwargs):
         timeline += randomized_phase('left', 1) # ('hand condition', repetitions = each loop has one of these)
         timeline += randomized_phase('right', 1)
         timeline += randomized_phase('both', 1)
+    print("Experimental phase generated:", timeline)
+
 
     exp_session_info['timeline'] = timeline
+    exp_session_info['current_trial'] = 0 # Initialize current_trial index
     request.session[cache_key] = exp_session_info
+
+    print("Session info updated:", request.session[cache_key])
 
     return timeline
 
@@ -40,21 +51,28 @@ def warmup_phase():
     # repeat the warmup_conditions twice
     return create_trials(warmup_conditions * 2, 'warmup')
 
+
 def randomized_phase(hand, repetitions):
     conditions = [
         {'metronome_condition': 'throughout'},
         {'metronome_condition': 'beginning'},
         {'metronome_condition': 'none'}
     ]
+    #random.shuffle(conditions)
+    #return create_trials(conditions, hand)
+
     # Initialize an empty list to store randomized trials
     randomized_trials = []
+
 
     # Loop for the specified number of repetitions
     for _ in range(repetitions):
         random.shuffle(conditions) # randomly shuffle the conditions
+        # for condition in conditions:
+            # randomized_trials += create_trials([condition], hand)
         while conditions: # continue until conditions is empty
             condition = conditions.pop()  # Remove and return the last condition
-            randomized_trials += create_trials([condition], hand) # Create trials with the current condition and add them to the randomized_trials list
+            randomized_trials += create_trials(conditions, hand) # Create trials with the current condition and add them to the randomized_trials list
     return randomized_trials
 
 # Create trials based on the given conditions in warm_up_phase and randomized_phase for the midi_timeline
@@ -91,18 +109,15 @@ def record_midi(request, *args, **kwargs):
     cache_key = session.experiment.cache_key
     exp_session_info = request.session.get(cache_key, {})
 
-    if 'current_trial' not in exp_session_info:
-        exp_session_info['current_trial'] = 1
-    else:
-        exp_session_info['current_trial'] += 1
-
-    current_trial = exp_session_info['current_trial'] - 1  # Adjust for 0-index
+    current_trial_index = exp_session_info.get('current_trial', 0)
     timeline = exp_session_info.get('timeline', [])
-    
-    if current_trial < len(timeline):
-        trial = timeline[current_trial]
+
+    if current_trial_index < len(timeline):
+        trial = timeline[current_trial_index]
+        exp_session_info['current_trial'] = current_trial_index + 1  # Increment the trial index
+        request.session[cache_key] = exp_session_info
     else:
-        trial = None  # Handle case where all trials are completed
+        trial = None  # No more trials available
 
     return trial, None
 
